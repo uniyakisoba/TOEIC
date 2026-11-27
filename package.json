@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "check:words": "node scripts/validate-words.mjs",
+    "build": "npm run check:words && tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

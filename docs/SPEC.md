@@ -57,7 +57,14 @@
 }
 ```
 - `level`：目安スコア帯（600 / 730 / 860）
-- `category`：オフィス、会議、人事・採用、財務・会計、営業・マーケティング、物流・購買、旅行・出張、飲食・イベント など
+- `category`：general（頻出一般語）、office（オフィス）、meeting（会議）、hr（人事・採用）、finance（財務・会計）、sales（営業・マーケ）、logistics（物流・製造）、travel（旅行・交通）、events（飲食・イベント）
+- `pos`：noun / verb / adjective / adverb / preposition / conjunction / phrase
+- データ本体は `src/data/words.json`。`npm run check:words` で必須項目・重複・値の妥当性を検査（ビルド時にも自動実行）
+
+### 収録状況
+| 版 | 語数 | 内訳 |
+|---|---|---|
+| v1 | 300 | 頻出一般語60 ＋ 8カテゴリ×30。600点レベル195語・730点レベル105語 |
 
 ## 5. 技術構成（案）
 | 役割 | 採用技術 |
@@ -72,8 +79,8 @@
 | 公開 | GitHub Actions で自動ビルド → GitHub Pages |
 
 ## 6. 開発ステップ
-1. 土台作り（プロジェクト作成、画面遷移、PWA化、GitHub Pages 公開）
-2. 単語データ 300語作成
+1. 土台作り（プロジェクト作成、画面遷移、PWA化、GitHub Pages 公開） ✅
+2. 単語データ 300語作成 ✅（単語一覧・検索画面も実装）
 3. フラッシュカード＋SRS
 4. 4択クイズ
 5. 音声読み上げ
