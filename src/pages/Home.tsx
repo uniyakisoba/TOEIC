@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useSettings } from '../settings'
+import { words } from '../data/words'
 
 export default function Home() {
   const { settings } = useSettings()
@@ -27,7 +28,7 @@ export default function Home() {
         <h2>目標</h2>
         <p className="muted">TOEIC 730点レベルの語彙 約2,500語の習得</p>
         <div className="progress" aria-label="習得率 0%"><div style={{ width: '0%' }} /></div>
-        <p className="muted small">習得済み 0 / 2,500 語</p>
+        <p className="muted small">習得済み 0 / 2,500 語（現在の収録：{words.length}語）</p>
       </div>
     </section>
   )
