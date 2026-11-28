@@ -1,4 +1,8 @@
+import { useEffect, useState } from 'react'
 import { useSettings, type Accent, type Theme } from '../settings'
+import { isSpeechSupported, loadVoices, pickVoice, speak } from '../lib/speech'
+
+const SAMPLE_SENTENCE = 'Thank you for your inquiry about our services.'
 
 const themes: { value: Theme; label: string }[] = [
   { value: 'system', label: '自動' },
@@ -15,6 +19,15 @@ const accents: { value: Accent; label: string }[] = [
 
 export default function SettingsPage() {
   const { settings, update } = useSettings()
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
+  const supported = isSpeechSupported()
+
+  useEffect(() => { void loadVoices().then(setVoices) }, [])
+
+  // 選んだアクセントで実際に使われる声
+  const voice = pickVoice(voices, settings.accent)
+  const accentLabel = accents.find((a) => a.value === settings.accent)?.label
+  const exact = voice && voice.lang.replace('_', '-').toLowerCase() === settings.accent.toLowerCase()
 
   return (
     <section className="stack">
@@ -45,6 +58,7 @@ export default function SettingsPage() {
 
       <div className="card">
         <h2>音声</h2>
+        {!supported && <p className="notice">このブラウザは音声読み上げに対応していません。</p>}
         <label className="field">
           <span className="field-label">アクセント</span>
           <select value={settings.accent} onChange={(e) => update({ accent: e.target.value as Accent })}>
@@ -61,6 +75,21 @@ export default function SettingsPage() {
           <input type="checkbox" checked={settings.autoSpeak}
             onChange={(e) => update({ autoSpeak: e.target.checked })} />
         </label>
+        {supported && (
+          <div className="field">
+            <button className="button block"
+              onClick={() => speak(SAMPLE_SENTENCE, { accent: settings.accent, rate: settings.speechRate })}>
+              試しに聞く
+            </button>
+            <p className="muted small">
+              {voices.length === 0
+                ? '使用する声：端末の標準の声'
+                : exact
+                  ? `使用する声：${voice!.name}`
+                  : `この端末には${accentLabel}英語の声がないため、${voice ? voice.name : '標準の声'}で読み上げます。`}
+            </p>
+          </div>
+        )}
       </div>
     </section>
   )
