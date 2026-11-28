@@ -137,9 +137,10 @@ export default function Study() {
       {/* カード全体をタップしてもめくれる（ボタン操作は下の「答えを見る」でも可能） */}
       <div className="flashcard" onClick={() => setFlipped(true)}>
         <span className="muted small">{CATEGORY_LABELS[word.category]}</span>
-        <span className="flash-word-row">
-          <span className="flash-word">{word.word}</span>
-          <SpeakButton text={word.word} />
+        <span className="flash-word">{word.word}</span>
+        {/* スピーカーの周りは「押し損じてもカードがめくれない」余白にする */}
+        <span className="speak-zone" onClick={(e) => e.stopPropagation()}>
+          <SpeakButton text={word.word} large />
         </span>
         {flipped ? (
           <span className="flash-answer">
