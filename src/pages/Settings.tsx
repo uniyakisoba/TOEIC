@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useSettings, type Accent, type Theme } from '../settings'
 import { isSpeechSupported, loadVoices, pickVoice, speak } from '../lib/speech'
+import { backupFileName, buildBackup, parseBackup } from '../lib/backup'
+import { getAllCards, getAllDaily, replaceAll } from '../lib/db'
+import { today } from '../lib/date'
 
 const SAMPLE_SENTENCE = 'Thank you for your inquiry about our services.'
 
@@ -23,6 +26,43 @@ export default function SettingsPage() {
   const supported = isSpeechSupported()
 
   useEffect(() => { void loadVoices().then(setVoices) }, [])
+
+  // ===== バックアップ =====
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
+
+  const exportBackup = async () => {
+    const [cards, daily] = await Promise.all([getAllCards(), getAllDaily()])
+    const json = JSON.stringify(buildBackup(cards, daily, settings), null, 2)
+    // Blob（メモリ上のファイル）を作り、一時的なリンクをクリックしてダウンロードさせる
+    const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = backupFileName(today())
+    a.click()
+    URL.revokeObjectURL(url)
+    setMessage({ ok: true, text: `単語${cards.length}語・${daily.length}日分の記録を書き出しました。` })
+  }
+
+  const importBackup = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // 同じファイルをもう一度選んでも反応するように
+    if (!file) return
+    try {
+      const backup = parseBackup(await file.text())
+      const when = backup.exportedAt ? new Date(backup.exportedAt).toLocaleString('ja-JP') : '不明'
+      const ok = window.confirm(
+        `${when} のバックアップ（単語${backup.cards.length}語・${backup.daily.length}日分）を読み込みます。\n` +
+        '今の端末の学習記録はすべて置き換わります。よろしいですか？',
+      )
+      if (!ok) return
+      await replaceAll(backup.cards, backup.daily)
+      update(backup.settings)
+      setMessage({ ok: true, text: '学習記録を復元しました。' })
+    } catch (err) {
+      setMessage({ ok: false, text: err instanceof Error ? err.message : '読み込みに失敗しました' })
+    }
+  }
 
   // 選んだアクセントで実際に使われる声
   const voice = pickVoice(voices, settings.accent)
@@ -90,6 +130,19 @@ export default function SettingsPage() {
             </p>
           </div>
         )}
+      </div>
+      <div className="card">
+        <h2>バックアップ</h2>
+        <p className="muted small">
+          学習記録はこの端末のブラウザ内だけに保存されています。ブラウザのデータを消去すると記録も消えるため、
+          ときどきファイルに書き出しておくと安心です。機種変更のときも、このファイルで引き継げます。
+        </p>
+        <div className="button-row">
+          <button className="button" onClick={() => void exportBackup()}>書き出す</button>
+          <button className="button" onClick={() => fileRef.current?.click()}>読み込む</button>
+        </div>
+        <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={(e) => void importBackup(e)} />
+        {message && <p className={`notice ${message.ok ? 'ok' : 'ng'}`} role="status">{message.text}</p>}
       </div>
     </section>
   )
