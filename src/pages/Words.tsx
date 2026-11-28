@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { words } from '../data/words'
 import { CATEGORY_LABELS, POS_LABELS, type Category } from '../data/types'
+import { SpeakButton } from '../components/SpeakButton'
 
 type CategoryFilter = Category | 'all'
 
@@ -54,7 +55,11 @@ export default function Words() {
               </button>
               {open && (
                 <div className="word-detail">
-                  <p>{w.example}</p>
+                  <p className="inline-speak">
+                    <SpeakButton text={w.word} small />
+                    <span className="muted small">単語を発音</span>
+                  </p>
+                  <p className="inline-speak">{w.example}<SpeakButton text={w.example} label="例文を読み上げ" small /></p>
                   <p className="muted">{w.exampleJa}</p>
                   <p className="small muted">{CATEGORY_LABELS[w.category]}・{w.level}点レベル</p>
                 </div>

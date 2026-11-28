@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { words } from '../data/words'
 import { CATEGORY_LABELS, POS_LABELS } from '../data/types'
+import { SpeakButton } from '../components/SpeakButton'
+import { useSpeech } from '../lib/useSpeech'
 import { useSettings } from '../settings'
 import { today } from '../lib/date'
 import { getAllCards, getAllDaily, saveReview } from '../lib/db'
@@ -26,6 +28,7 @@ interface SessionStats {
 
 export default function Study() {
   const { settings } = useSettings()
+  const { say, autoSpeak } = useSpeech()
   const [date] = useState(today) // 学習開始時の日付で固定（日付をまたいでも途中で変わらない）
   const [phase, setPhase] = useState<Phase>('loading')
   const [queue, setQueue] = useState<QueueItem[]>([])
@@ -52,6 +55,12 @@ export default function Study() {
   useEffect(() => { void start() }, [start])
 
   const current = queue[index]
+
+  // 自動発音：新しいカードが表示されたら単語を読み上げる
+  const currentWord = phase === 'studying' ? current?.word.word : undefined
+  useEffect(() => {
+    if (autoSpeak && currentWord) say(currentWord)
+  }, [autoSpeak, currentWord, index, say])
   const baseState: CardState | null = current ? current.state ?? newCardState(current.word.id, date) : null
 
   const grade = useCallback(async (g: Grade) => {
@@ -125,19 +134,26 @@ export default function Study() {
         <span className="muted small">残り {remaining}</span>
       </div>
 
-      <button className="flashcard" onClick={() => setFlipped(true)} aria-label={flipped ? undefined : '答えを表示'}>
+      {/* カード全体をタップしてもめくれる（ボタン操作は下の「答えを見る」でも可能） */}
+      <div className="flashcard" onClick={() => setFlipped(true)}>
         <span className="muted small">{CATEGORY_LABELS[word.category]}</span>
-        <span className="flash-word">{word.word}</span>
+        <span className="flash-word-row">
+          <span className="flash-word">{word.word}</span>
+          <SpeakButton text={word.word} />
+        </span>
         {flipped ? (
           <span className="flash-answer">
             <span className="flash-meaning"><span className="pos">{POS_LABELS[word.pos]}</span>{word.meaning}</span>
-            <span className="flash-example">{word.example}</span>
+            <span className="flash-example">
+              {word.example}
+              <SpeakButton text={word.example} label="例文を読み上げ" small />
+            </span>
             <span className="muted">{word.exampleJa}</span>
           </span>
         ) : (
           <span className="muted small flash-hint">タップして答えを表示</span>
         )}
-      </button>
+      </div>
 
       {flipped ? (
         <div className="grade-buttons">

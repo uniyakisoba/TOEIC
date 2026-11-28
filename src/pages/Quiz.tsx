@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { words } from '../data/words'
 import { POS_LABELS, type Word } from '../data/types'
+import { SpeakButton } from '../components/SpeakButton'
+import { useSpeech } from '../lib/useSpeech'
 import { today } from '../lib/date'
 import { getAllCards, saveReview } from '../lib/db'
 import { buildQuestions, type Direction, type Question } from '../lib/quiz'
@@ -31,6 +33,7 @@ export default function Quiz() {
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Answer[]>([])
   const feedbackRef = useRef<HTMLDivElement>(null)
+  const { say, autoSpeak } = useSpeech()
 
   // 学習済みの単語（SRS に記録がある単語）を読み込む
   useEffect(() => {
@@ -58,6 +61,15 @@ export default function Quiz() {
   useEffect(() => {
     if (answered) feedbackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [answered])
+
+  // 自動発音：英→日は問題表示時、日→英は答えがわかってから単語を読み上げる
+  const promptWord = phase === 'playing' ? question?.word.word : undefined
+  useEffect(() => {
+    if (autoSpeak && promptWord && direction === 'en-ja') say(promptWord)
+  }, [autoSpeak, promptWord, direction, index, say])
+  useEffect(() => {
+    if (autoSpeak && answered && direction === 'ja-en') say(answered.question.word.word)
+  }, [autoSpeak, answered, direction, say])
 
   // 次の問題に進んだら画面の一番上に戻る
   useEffect(() => {
@@ -211,8 +223,11 @@ export default function Quiz() {
 
       <div className="card quiz-prompt">
         <span className="pos">{POS_LABELS[word.pos]}</span>
-        <span className={direction === 'en-ja' ? 'flash-word' : 'quiz-ja'}>
-          {direction === 'en-ja' ? word.word : word.meaning}
+        <span className="flash-word-row">
+          <span className={direction === 'en-ja' ? 'flash-word' : 'quiz-ja'}>
+            {direction === 'en-ja' ? word.word : word.meaning}
+          </span>
+          {direction === 'en-ja' && <SpeakButton text={word.word} />}
         </span>
       </div>
 
@@ -229,8 +244,8 @@ export default function Quiz() {
         <div className="stack-sm" ref={feedbackRef}>
           <div className={`card feedback ${answered.correct ? 'ok' : 'ng'}`}>
             <strong>{answered.correct ? '正解！' : '不正解'}</strong>
-            <span><strong>{word.word}</strong>：{word.meaning}</span>
-            <span>{word.example}</span>
+            <span className="inline-speak"><strong>{word.word}</strong>：{word.meaning}<SpeakButton text={word.word} small /></span>
+            <span className="inline-speak">{word.example}<SpeakButton text={word.example} label="例文を読み上げ" small /></span>
             <span className="muted">{word.exampleJa}</span>
           </div>
           <button className="button primary block" onClick={next}>
