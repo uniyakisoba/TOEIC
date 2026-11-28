@@ -218,3 +218,42 @@ select {
 .grade-hard { background: var(--hard); }
 .grade-good { background: var(--good); }
 .grade-easy { background: var(--easy); }
+
+/* ===== 4択クイズ ===== */
+/* 自動スクロールで「次へ」ボタンが下のタブバーに隠れないよう、余白を見込む */
+.study .stack-sm { scroll-margin-bottom: calc(env(safe-area-inset-bottom) + 80px); }
+.segmented.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.segmented button:disabled { opacity: 0.4; cursor: default; }
+.button:disabled { opacity: 0.5; cursor: default; }
+.progress.thin { height: 6px; margin: 0; }
+.quiz-prompt {
+  min-height: 160px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  text-align: center;
+}
+.quiz-ja { font-size: 1.5rem; font-weight: 700; }
+.choices { display: flex; flex-direction: column; gap: 8px; }
+.choice {
+  min-height: 56px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface); color: var(--text);
+  font: inherit; font-size: 1rem; text-align: left; cursor: pointer;
+}
+.choice:disabled { cursor: default; }
+.choice-num {
+  flex: none; display: grid; place-items: center; width: 26px; height: 26px;
+  border-radius: 50%; background: var(--bg); color: var(--muted); font-size: 0.8rem;
+}
+.choice.correct { border-color: var(--good); background: color-mix(in srgb, var(--good) 15%, var(--surface)); }
+.choice.wrong { border-color: var(--again); background: color-mix(in srgb, var(--again) 15%, var(--surface)); }
+.choice.dim { opacity: 0.5; }
+.feedback { display: flex; flex-direction: column; gap: 4px; border-left-width: 4px; }
+.feedback.ok { border-left-color: var(--good); }
+.feedback.ng { border-left-color: var(--again); }
+.score { font-size: 2.6rem; font-weight: 700; margin: 0; }
+.score .muted { font-size: 1.4rem; }
+.review-list { list-style: none; margin: 0; padding: 0; }
+.review-list li { display: flex; flex-direction: column; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.review-list li:last-child { border-bottom: 0; }
