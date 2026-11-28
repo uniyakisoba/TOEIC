@@ -57,6 +57,21 @@ export async function saveReview(card: CardState, grade: Grade, isNew: boolean, 
   await Promise.all([tx.objectStore('cards').put(card), tx.objectStore('daily').put(daily), tx.done])
 }
 
+/** バックアップからの復元：今の記録をすべて消して、渡された記録に置き換える（1つのトランザクションで） */
+export async function replaceAll(cards: CardState[], daily: DailyLog[]) {
+  const db = await getDB()
+  const tx = db.transaction(['cards', 'daily'], 'readwrite')
+  const cardStore = tx.objectStore('cards')
+  const dailyStore = tx.objectStore('daily')
+  await Promise.all([
+    cardStore.clear(),
+    dailyStore.clear(),
+    ...cards.map((c) => cardStore.put(c)),
+    ...daily.map((d) => dailyStore.put(d)),
+    tx.done,
+  ])
+}
+
 /** テスト用：接続を閉じて次回は開き直す */
 export async function resetConnectionForTest() {
   if (dbPromise) (await dbPromise).close()
