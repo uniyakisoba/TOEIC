@@ -10,6 +10,7 @@ export interface Settings {
   accent: Accent
   speechRate: number
   autoSpeak: boolean
+  voiceURI: string | null // 選んだ声の識別子。null は「自動」
 }
 
 export const defaultSettings: Settings = {
@@ -18,6 +19,7 @@ export const defaultSettings: Settings = {
   accent: 'en-US',
   speechRate: 1,
   autoSpeak: false,
+  voiceURI: null,
 }
 
 const STORAGE_KEY = 'toeic-settings'
