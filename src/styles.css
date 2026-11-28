@@ -11,6 +11,11 @@
   --primary-text: #ffffff;
   --primary-soft: #dbeafe;
   --shadow: 0 1px 3px rgb(15 23 42 / 0.08);
+  --again: #dc2626;
+  --hard: #d97706;
+  --good: #16a34a;
+  --easy: #2563eb;
+  --grade-text: #ffffff;
 }
 
 /* 端末がダークモードで、かつ手動で「ライト」を選んでいないとき */
@@ -26,6 +31,11 @@
     --primary-text: #0f172a;
     --primary-soft: #1e3a8a;
     --shadow: none;
+    --again: #f87171;
+    --hard: #fbbf24;
+    --good: #4ade80;
+    --easy: #60a5fa;
+    --grade-text: #0f172a;
   }
 }
 
@@ -41,6 +51,11 @@
   --primary-text: #0f172a;
   --primary-soft: #1e3a8a;
   --shadow: none;
+  --again: #f87171;
+  --hard: #fbbf24;
+  --good: #4ade80;
+  --easy: #60a5fa;
+  --grade-text: #0f172a;
 }
 
 /* ===== 全体 ===== */
@@ -169,3 +184,37 @@ select {
   background: var(--primary-soft); color: var(--primary); font-size: 0.75rem;
 }
 .word-detail { padding: 0 16px 12px; border-top: 1px solid var(--border); padding-top: 10px; }
+
+/* ===== フラッシュカード ===== */
+.center { text-align: center; }
+.mt { margin-top: 12px; }
+.study { display: flex; flex-direction: column; gap: 16px; }
+.study-meta { display: flex; align-items: center; justify-content: space-between; }
+.study-meta .badge { margin: 0; }
+.badge-new { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
+.flashcard {
+  min-height: 46dvh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  padding: 24px 20px;
+  border: 1px solid var(--border); border-radius: 20px;
+  background: var(--surface); color: var(--text); box-shadow: var(--shadow);
+  font: inherit; text-align: center; cursor: pointer;
+}
+.flash-word { font-size: 2.2rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+.flash-hint { margin-top: 16px; }
+.flash-answer { display: flex; flex-direction: column; gap: 10px; width: 100%; padding-top: 16px; border-top: 1px dashed var(--border); }
+.flash-meaning { font-size: 1.3rem; font-weight: 700; }
+.flash-example { font-size: 1.05rem; }
+.grade-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.grade {
+  min-height: 60px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 0; border-radius: 12px; color: var(--grade-text);
+  font: inherit; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+}
+.grade:disabled { opacity: 0.6; }
+.grade-interval { font-size: 0.75rem; font-weight: 400; opacity: 0.9; }
+.grade-again { background: var(--again); }
+.grade-hard { background: var(--hard); }
+.grade-good { background: var(--good); }
+.grade-easy { background: var(--easy); }

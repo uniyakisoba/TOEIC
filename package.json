@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "check:words": "node scripts/validate-words.mjs",
+    "test": "vitest run",
     "build": "npm run check:words && tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "idb": "^8.0.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.7"
@@ -18,8 +20,10 @@
     "@types/react": "^19.3.3",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
+    "fake-indexeddb": "^6.2.8",
     "typescript": "^6.0.3",
     "vite": "^8.4.0",
-    "vite-plugin-pwa": "^2.0.0"
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.1.2"
   }
 }
