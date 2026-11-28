@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useSettings, type Accent, type Theme } from '../settings'
-import { isSpeechSupported, loadVoices, pickVoice, speak } from '../lib/speech'
+import { englishVoices, isSpeechSupported, loadVoices, pickVoice, speak, voiceLabel, voiceTier } from '../lib/speech'
 import { backupFileName, buildBackup, parseBackup } from '../lib/backup'
 import { getAllCards, getAllDaily, replaceAll } from '../lib/db'
 import { today } from '../lib/date'
@@ -64,10 +64,16 @@ export default function SettingsPage() {
     }
   }
 
-  // 選んだアクセントで実際に使われる声
-  const voice = pickVoice(voices, settings.accent)
+  // 実際に使われる声と、選べる声の一覧
+  const voice = pickVoice(voices, settings.accent, settings.voiceURI)
+  const choices = englishVoices(voices, settings.accent)
   const accentLabel = accents.find((a) => a.value === settings.accent)?.label
   const exact = voice && voice.lang.replace('_', '-').toLowerCase() === settings.accent.toLowerCase()
+  // 選んだ声が端末から消えている（別の端末から設定を読み込んだ等）場合も「自動」扱い
+  const selectedURI = settings.voiceURI && choices.some((v) => v.voiceURI === settings.voiceURI) ? settings.voiceURI : ''
+  // iPhone / iPad で、高品質な声が見つからないときだけダウンロード方法を案内する
+  const isApple = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  const hasHighQuality = choices.some((v) => voiceTier(v) === 'premium' || voiceTier(v) === 'enhanced')
 
   return (
     <section className="stack">
@@ -101,10 +107,24 @@ export default function SettingsPage() {
         {!supported && <p className="notice">このブラウザは音声読み上げに対応していません。</p>}
         <label className="field">
           <span className="field-label">アクセント</span>
-          <select value={settings.accent} onChange={(e) => update({ accent: e.target.value as Accent })}>
+          <select value={settings.accent} onChange={(e) => update({ accent: e.target.value as Accent, voiceURI: null })}>
             {accents.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
           </select>
         </label>
+        {supported && choices.length > 0 && (
+          <label className="field">
+            <span className="field-label">声</span>
+            <select value={selectedURI}
+              onChange={(e) => {
+                const uri = e.target.value || null
+                update({ voiceURI: uri })
+                speak(SAMPLE_SENTENCE, { accent: settings.accent, rate: settings.speechRate, voiceURI: uri })
+              }}>
+              <option value="">自動（おすすめ）</option>
+              {choices.map((v) => <option key={v.voiceURI} value={v.voiceURI}>{voiceLabel(v)}</option>)}
+            </select>
+          </label>
+        )}
         <label className="field">
           <span className="field-label">読み上げ速度：<strong>{settings.speechRate.toFixed(1)}倍</strong></span>
           <input type="range" min={0.5} max={1.5} step={0.1} value={settings.speechRate}
@@ -118,15 +138,25 @@ export default function SettingsPage() {
         {supported && (
           <div className="field">
             <button className="button block"
-              onClick={() => speak(SAMPLE_SENTENCE, { accent: settings.accent, rate: settings.speechRate })}>
+              onClick={() => speak(SAMPLE_SENTENCE, { accent: settings.accent, rate: settings.speechRate, voiceURI: settings.voiceURI })}>
               試しに聞く
             </button>
             <p className="muted small">
               {voices.length === 0
                 ? '使用する声：端末の標準の声'
                 : exact
-                  ? `使用する声：${voice!.name}`
-                  : `この端末には${accentLabel}英語の声がないため、${voice ? voice.name : '標準の声'}で読み上げます。`}
+                  ? `使用する声：${voiceLabel(voice!)}`
+                  : `この端末には${accentLabel}英語の声がないため、${voice ? voiceLabel(voice) : '標準の声'}で読み上げます。`}
+            </p>
+          </div>
+        )}
+        {supported && isApple && !hasHighQuality && (
+          <div className="notice">
+            <strong>もっと自然な声にするには</strong>
+            <p className="small">
+              iPhone の「設定」→「アクセシビリティ」→「読み上げコンテンツ」→「声」→「英語」で、
+              「（プレミアム）」または「（拡張）」と付いた声（例：Ava、Zoe、Evan）をダウンロードしてください。
+              ダウンロード後にこのアプリを開き直すと、上の「声」の一覧に出てきます。
             </p>
           </div>
         )}

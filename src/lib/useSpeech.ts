@@ -6,8 +6,8 @@ import { isSpeechSupported, speak } from './speech'
 export function useSpeech() {
   const { settings } = useSettings()
   const say = useCallback(
-    (text: string) => speak(text, { accent: settings.accent, rate: settings.speechRate }),
-    [settings.accent, settings.speechRate],
+    (text: string) => speak(text, { accent: settings.accent, rate: settings.speechRate, voiceURI: settings.voiceURI }),
+    [settings.accent, settings.speechRate, settings.voiceURI],
   )
   return { say, supported: isSpeechSupported(), autoSpeak: settings.autoSpeak }
 }
